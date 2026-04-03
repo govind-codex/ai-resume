@@ -36,14 +36,10 @@ main{
             padding-inline: 1rem;
             padding-block: 0.75rem;
             border-radius: 0.75rem;
-
-            // background-color: #222;
-            // color: whitesmoke;
-
-            // &:focus{
-            //     outline: none;
-            //     border-color: #555;
-            // }
         }
+    }
+    a{
+        color: #e1034d;
+        text-decoration: none;
     }
 }
