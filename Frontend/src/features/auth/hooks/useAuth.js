@@ -5,18 +5,39 @@ import { login , register, logout, getMe} from "../services/auth.api";
 export const useAuth = () => {
   const context = useContext(AuthContext)
   const {user, setUser, loading, setloading} = context
+
   const handleLogin = async ({ email, password }) => {
     setloading(true)
-    const data = await login({ email, password })
-    setUser(data.user)
+    try{
+      const data = await login({ email, password })
+      setUser(data.user)
+    } catch (error) {
+      console.error('Login failed:', error)
+    } finally {
+      setloading(false)
+    }
+
     setloading(false)
   }
 
-  export const handleRegister = async ({ username , email,  password }) => {
+   const handleRegister = async ({ username , email,  password }) => {
     setloading(true)
-    const data = await register({ username, email, password})
-    setUser(data.user)
+    try {
+      const data = await register({ username, email, password})
+      setUser(data.user)
+    } catch (error) {
+      console.error('Register failed:', error)
+    } finally {
+      setloading(false)
+    }
+  }
+
+   const handlelogout = async () => {
+    setloading(true)
+    await logout()
+    setUser(null)
     setloading(false)
   }
 
+  return { user, loading, handleLogin, handleRegister, handlelogout}
 }
