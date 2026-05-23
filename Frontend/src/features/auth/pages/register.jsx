@@ -1,5 +1,9 @@
 import React from 'react'
 import { useNavigate,Link } from 'react-router'
+import { useState } from 'react'
+import { useAuth } from '../hooks/useAuth'
+import '../auth.form.scss'
+
 
     
 const register = () => {
