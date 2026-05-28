@@ -1,15 +1,15 @@
 import { useContext } from "react";
 import { useEffect } from "react";
 import { AuthContext } from "../auth.context";
-import { login , register, logout, getMe} from "../services/auth.api";
+import { login, register, logout, getMe } from "../services/auth.api";
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  const {user, setUser, loading, setloading} = context
+  const { user, setUser, loading, setloading } = context
 
   const handleLogin = async ({ email, password }) => {
     setloading(true)
-    try{
+    try {
       const data = await login({ email, password })
       setUser(data.user)
     } catch (error) {
@@ -21,10 +21,10 @@ export const useAuth = () => {
     setloading(false)
   }
 
-   const handleRegister = async ({ username , email,  password }) => {
+  const handleRegister = async ({ username, email, password }) => {
     setloading(true)
     try {
-      const data = await register({ username, email, password})
+      const data = await register({ username, email, password })
       setUser(data.user)
     } catch (error) {
       console.error('Register failed:', error)
@@ -33,9 +33,9 @@ export const useAuth = () => {
     }
   }
 
-   const handlelogout = async () => {
+  const handlelogout = async () => {
     setloading(true)
-    try{
+    try {
       const data = await logout()
       setUser(null)
     } catch (error) {
@@ -45,15 +45,42 @@ export const useAuth = () => {
     }
   }
 
-      useEffect(() => {
-        const getAndSetUser = async () => {
-            const data = await getMe()
-            setUser(data.user)
-            setloading(false)
+  // useEffect(() => {
+  //   const getAndSetUser = async () => {
+  //     const data = await getMe()
+  //     setUser(data.user)
+  //     setloading(false)
+  //   }
+
+  //   getAndSetUser()
+  // }, [])
+
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const getAndSetUser = async () => {
+      try {
+        const data = await getMe();
+
+        if (isMounted) {
+          setUser(data.user);
         }
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      } finally {
+        if (isMounted) {
+          setloading(false);
+        }
+      }
+    };
 
-        getAndSetUser()
-    }, [])
+    getAndSetUser();
 
-  return { user, loading, handleLogin, handleRegister, handlelogout}
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return { user, loading, handleLogin, handleRegister, handlelogout }
 }
