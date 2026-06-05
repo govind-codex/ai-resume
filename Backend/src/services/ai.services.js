@@ -40,7 +40,7 @@ const interviewReportSchema = z.object({
 
 })
 
-async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
+async function generateInterViewReport({ resume, selfDescription, jobDescription }) {
 
     const prompt = `Generate an interview report for a candidate with the following details:
                     Resume: ${resume}
@@ -152,4 +152,4 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
     // console.log("RAW RESPONSE:\n", response.text)
 }
 
-module.exports = { generateInterviewReport };
+module.exports = { generateInterViewReport };

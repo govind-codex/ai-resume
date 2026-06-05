@@ -1,5 +1,5 @@
-const {pdfParse} = require('pdf-parse');
-const generateInterViewReport = require('../services/ai.services.js'); 
+const pdfParse = require('pdf-parse');
+const {generateInterViewReport} = require('../services/ai.services.js'); 
 const interViewReportModel = require('../models/interviewReport.model.js');
 
 async function generateInterViewReportController(req,res){
