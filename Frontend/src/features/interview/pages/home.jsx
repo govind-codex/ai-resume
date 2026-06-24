@@ -1,10 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import "../style/home.scss"
+import { useInterview } from '../../hook/useInterview.js'
+import { useNavigate } from 'react-router'
 
 const Home = () => {
+  const { loading, generateReport } = useInterview()
+  const resumeInputRef = useRef()
   const [resume, setResume] = useState(null);
   const [jobDescription, setJobDescription] = useState('');
   const [selfDescription, setSelfDescription] = useState('');
+
+  const navigate = useNavigate()
+
+  const handleGenerateReport = async () => {
+    const resumeFile = resumeInputRef.current.files[0]
+    await generateReport({ jobDescription, selfDescription, resumeFile })
+    const data = await generateReport({ jobDescription, selfDescription, resumeFile})
+    navigate(`/interview/${data._id}`)
+  }
 
   const handleResumeChange = (e) => {
     const file = e.target.files?.[0];
@@ -52,6 +65,7 @@ const Home = () => {
               <h2>TARGET JOB DESCRIPTION</h2>
             </div>
             <textarea
+              onChange={(e) => {setJobDescription(e.target.value)}}
               name="jobDescription"
               id="jobDescription"
               placeholder='Paste the full job description here... e.g. "Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system design..."'
@@ -85,6 +99,7 @@ const Home = () => {
                   <p className="upload-subtext">PDF or DOCX (MAX 5MB)</p>
                 </div>
                 <input
+                  ref={resumeInputRef}
                   hidden
                   type="file"
                   name="resume"
@@ -100,6 +115,7 @@ const Home = () => {
               <div className="description-group">
                 <label htmlFor="selfDescription" className="input-label">Quick Self Description</label>
                 <textarea
+                  onChange={(e) => {setSelfDescription(e.target.value)}}
                   name="selfDescription"
                   id="selfDescription"
                   placeholder="Briefly describe your experience, key skills, and years of experience if you don't have a resume handy..."
@@ -115,6 +131,7 @@ const Home = () => {
               </div>
 
               <button
+                onClick={handleGenerateReport}
                 className={`button primary-button ${!isFormValid ? 'disabled' : ''}`}
                 disabled={!isFormValid}
               >

@@ -1,63 +1,67 @@
 import React, { useMemo, useState } from 'react'
 import { useLocation, useParams } from 'react-router'
 import "../style/interview.scss"
+import { useInterview } from '../../hook/useInterview.js'
 
-const defaultInterviewData = {
-  matchScore: 78,
-  technicalQuestions: [
-    {
-      question: "What is the difference between authentication and authorization?",
-      intention: "To evaluate the candidate's understanding of security concepts and access control mechanisms.",
-      answer: "Authentication verifies the identity of a user, while authorization determines what resources or actions the authenticated user is allowed to access."
-    },
-    {
-      question: "Explain how JWT authentication works in Node.js.",
-      intention: "To assess knowledge of token-based authentication and session management.",
-      answer: "JWT authentication works by generating a signed token after successful login. The client stores the token and sends it with subsequent requests. The server verifies the token's signature and extracts user information without maintaining session state."
-    },
-    {
-      question: "How does the Express.js middleware pipeline work?",
-      intention: "To test understanding of request processing and middleware execution flow.",
-      answer: "Express executes middleware functions sequentially in the order they are registered. Each middleware can modify the request or response objects, terminate the request, or pass control to the next middleware using next()."
-    }
-  ],
-  behavioralQuestions: [
-    {
-      question: "Tell me about yourself.",
-      intention: "To understand the candidate's background, communication skills, and career journey.",
-      answer: "Provide a concise summary covering education, relevant experience, key technical skills, notable projects, and career goals that align with the role."
-    },
-    {
-      question: "Describe a challenging bug you fixed and how you approached it.",
-      intention: "To evaluate problem-solving ability, debugging methodology, and persistence.",
-      answer: "Explain the issue, describe how you investigated it, the tools and techniques used, the solution implemented, and the outcome achieved."
-    },
-    {
-      question: "How do you handle tight project deadlines?",
-      intention: "To assess time management, prioritization, and ability to work under pressure.",
-      answer: "Discuss breaking work into priorities, communicating risks early, focusing on high-impact tasks, tracking progress, and maintaining quality while meeting deadlines."
-    }
-  ],
-  skillGaps: [
-    { skill: "System Design", reason: "Limited experience designing scalable applications." },
-    { skill: "Testing", reason: "Needs stronger knowledge of unit and integration testing." },
-    { skill: "Cloud Deployment", reason: "Limited hands-on experience with AWS and CI/CD pipelines." }
-  ],
-  preperationPlan: [
-    { day: 1, task: "Revise JavaScript fundamentals, closures, promises, and async/await." },
-    { day: 2, task: "Practice Node.js and Express.js interview questions." },
-    { day: 3, task: "Study MongoDB indexing, aggregation, and query optimization." },
-    { day: 4, task: "Build a small REST API with authentication and role-based access control." },
-    { day: 5, task: "Practice behavioral interview questions using the STAR method." },
-    { day: 6, task: "Review system design basics and API scalability concepts." },
-    { day: 7, task: "Conduct a mock interview and identify weak areas." }
-  ]
-}
+
+// const defaultInterviewData = {
+//   matchScore: 78,
+//   technicalQuestions: [
+//     {
+//       question: "What is the difference between authentication and authorization?",
+//       intention: "To evaluate the candidate's understanding of security concepts and access control mechanisms.",
+//       answer: "Authentication verifies the identity of a user, while authorization determines what resources or actions the authenticated user is allowed to access."
+//     },
+//     {
+//       question: "Explain how JWT authentication works in Node.js.",
+//       intention: "To assess knowledge of token-based authentication and session management.",
+//       answer: "JWT authentication works by generating a signed token after successful login. The client stores the token and sends it with subsequent requests. The server verifies the token's signature and extracts user information without maintaining session state."
+//     },
+//     {
+//       question: "How does the Express.js middleware pipeline work?",
+//       intention: "To test understanding of request processing and middleware execution flow.",
+//       answer: "Express executes middleware functions sequentially in the order they are registered. Each middleware can modify the request or response objects, terminate the request, or pass control to the next middleware using next()."
+//     }
+//   ],
+//   behavioralQuestions: [
+//     {
+//       question: "Tell me about yourself.",
+//       intention: "To understand the candidate's background, communication skills, and career journey.",
+//       answer: "Provide a concise summary covering education, relevant experience, key technical skills, notable projects, and career goals that align with the role."
+//     },
+//     {
+//       question: "Describe a challenging bug you fixed and how you approached it.",
+//       intention: "To evaluate problem-solving ability, debugging methodology, and persistence.",
+//       answer: "Explain the issue, describe how you investigated it, the tools and techniques used, the solution implemented, and the outcome achieved."
+//     },
+//     {
+//       question: "How do you handle tight project deadlines?",
+//       intention: "To assess time management, prioritization, and ability to work under pressure.",
+//       answer: "Discuss breaking work into priorities, communicating risks early, focusing on high-impact tasks, tracking progress, and maintaining quality while meeting deadlines."
+//     }
+//   ],
+//   skillGaps: [
+//     { skill: "System Design", reason: "Limited experience designing scalable applications." },
+//     { skill: "Testing", reason: "Needs stronger knowledge of unit and integration testing." },
+//     { skill: "Cloud Deployment", reason: "Limited hands-on experience with AWS and CI/CD pipelines." }
+//   ],
+//   preperationPlan: [
+//     { day: 1, task: "Revise JavaScript fundamentals, closures, promises, and async/await." },
+//     { day: 2, task: "Practice Node.js and Express.js interview questions." },
+//     { day: 3, task: "Study MongoDB indexing, aggregation, and query optimization." },
+//     { day: 4, task: "Build a small REST API with authentication and role-based access control." },
+//     { day: 5, task: "Practice behavioral interview questions using the STAR method." },
+//     { day: 6, task: "Review system design basics and API scalability concepts." },
+//     { day: 7, task: "Conduct a mock interview and identify weak areas." }
+//   ]
+// }
+
+const { report } = useInterview()
 
 const Interview = () => {
   const { interviewId } = useParams()
   const location = useLocation()
-  const interviewData = location.state?.interviewData ?? defaultInterviewData
+  const interviewData = location.state?.interviewData ?? report
   const [activeSection, setActiveSection] = useState('technical')
 
   const sections = useMemo(() => ([
@@ -70,6 +74,7 @@ const Interview = () => {
 
   return (
     <main className="interview-page">
+      const { report } = useInterview()
       <section className="interview-shell">
         <aside className="interview-panel nav-panel">
           <div className="panel-card hero-card">
