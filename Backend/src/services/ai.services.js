@@ -69,6 +69,7 @@ async function generateInterViewReport({ resume, selfDescription, jobDescription
     const responseSchema = {
         type: "object",
         properties: {
+            title: {type: "string"},
             matchScore: { type: "number" },
 
             technicalQuestions: {
@@ -129,6 +130,7 @@ async function generateInterViewReport({ resume, selfDescription, jobDescription
             },
         },
         required: [
+            "title",
             "matchScore",
             "technicalQuestions",
             "behavioralQuestions",
@@ -149,7 +151,8 @@ async function generateInterViewReport({ resume, selfDescription, jobDescription
         }
     })
 
-    console.log(JSON.parse(response.text))
+    return JSON.parse(response.text);
+    // console.log(JSON.parse(response.text))
     // console.log("RAW RESPONSE:\n", response.text)
 }
 
