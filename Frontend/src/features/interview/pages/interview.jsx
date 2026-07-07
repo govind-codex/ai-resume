@@ -56,9 +56,12 @@ import { useInterview } from '../../hook/useInterview.js'
 //   ]
 // }
 
-const { report } = useInterview()
+
 
 const Interview = () => {
+
+  const { report } = useInterview()
+  
   const { interviewId } = useParams()
   const location = useLocation()
   const interviewData = location.state?.interviewData ?? report
@@ -74,7 +77,6 @@ const Interview = () => {
 
   return (
     <main className="interview-page">
-      const { report } = useInterview()
       <section className="interview-shell">
         <aside className="interview-panel nav-panel">
           <div className="panel-card hero-card">
