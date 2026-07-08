@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react'
-import { useLocation, useParams } from 'react-router'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useLocation, useParams, useNavigate } from 'react-router'
 import "../style/interview.scss"
 import { useInterview } from '../../hook/useInterview.js'
 
@@ -60,20 +60,38 @@ import { useInterview } from '../../hook/useInterview.js'
 
 const Interview = () => {
 
-  const { report } = useInterview()
-  
   const { interviewId } = useParams()
+  const { report } = useInterview()
+  const { reports, getReportById, loading } = useInterview()
+
+  useEffect(() => {
+    if (interviewId) {
+      getReportById(interviewId)
+    }
+  }, [interviewId])
+
+
   const location = useLocation()
-  const interviewData = location.state?.interviewData ?? report
+  const interviewData = location.state?.interviewData ?? report??{}
   const [activeSection, setActiveSection] = useState('technical')
 
   const sections = useMemo(() => ([
-    { key: 'technical', label: 'Technical questions', items: interviewData.technicalQuestions ?? [] },
-    { key: 'behavioral', label: 'Behavioral questions', items: interviewData.behavioralQuestions ?? [] },
-    { key: 'roadmap', label: 'Road Map', items: interviewData.preperationPlan ?? interviewData.preparationPlan ?? [] }
+    { key: 'technical', label: 'Technical questions', items: interviewData?.technicalQuestions ?? [] },
+    { key: 'behavioral', label: 'Behavioral questions', items: interviewData?.behavioralQuestions ?? [] },
+    { key: 'roadmap', label: 'Road Map', items: interviewData?.preperationPlan ?? interviewData?.preparationPlan ?? [] }
   ]), [interviewData])
 
+  if (loading || !report) {
+    return (
+      <main className='loading-screen'>
+        <h1>Loading your interview plan...</h1>
+      </main>
+    )
+  }
+
   const activeSectionData = sections.find((section) => section.key === activeSection) ?? sections[0]
+
+
 
   return (
     <main className="interview-page">

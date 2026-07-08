@@ -4,7 +4,7 @@ import { useInterview } from '../../hook/useInterview.js'
 import { useNavigate } from 'react-router'
 
 const Home = () => {
-  const { loading, generateReport } = useInterview()
+  const { loading, generateReport, reports } = useInterview()
   const resumeInputRef = useRef()
   const [resume, setResume] = useState(null);
   const [jobDescription, setJobDescription] = useState('');
@@ -15,13 +15,13 @@ const Home = () => {
   const handleGenerateReport = async () => {
     const resumeFile = resumeInputRef.current.files[0]
     // await generateReport({ jobDescription, selfDescription, resumeFile })
-    const data = await generateReport({ jobDescription, selfDescription, resumeFile})
+    const data = await generateReport({ jobDescription, selfDescription, resumeFile })
     console.log("Generated report data:", data)
     navigate(`/interview/${data._id}`)
   }
 
-  if(loading) {
-    return(
+  if (loading) {
+    return (
       <main className='loading-screen'>
         <h1>loading your interview plan...</h1>
       </main>
@@ -74,7 +74,7 @@ const Home = () => {
               <h2>TARGET JOB DESCRIPTION</h2>
             </div>
             <textarea
-              onChange={(e) => {setJobDescription(e.target.value)}}
+              onChange={(e) => { setJobDescription(e.target.value) }}
               name="jobDescription"
               id="jobDescription"
               placeholder='Paste the full job description here... e.g. "Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system design..."'
@@ -124,7 +124,7 @@ const Home = () => {
               <div className="description-group">
                 <label htmlFor="selfDescription" className="input-label">Quick Self Description</label>
                 <textarea
-                  onChange={(e) => {setSelfDescription(e.target.value)}}
+                  onChange={(e) => { setSelfDescription(e.target.value) }}
                   name="selfDescription"
                   id="selfDescription"
                   placeholder="Briefly describe your experience, key skills, and years of experience if you don't have a resume handy..."
@@ -150,6 +150,10 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      <footer className="home-footer">
+        <p>© 2026 AI Resume. Built to help you prepare smarter for interviews.</p>
+      </footer>
     </main>
   )
 }
