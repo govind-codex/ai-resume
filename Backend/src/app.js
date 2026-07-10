@@ -12,15 +12,35 @@ const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL ||
   .map((origin) => origin.trim())
   .filter(Boolean);
 
+function isAllowedOrigin(origin) {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  try {
+    const url = new URL(origin);
+    return (
+      /^https:\/\/.*\.vercel\.app$/.test(url.origin) ||
+      /^https:\/\/.*\.netlify\.app$/.test(url.origin)
+    );
+  } catch (error) {
+    return false;
+  }
+}
+
 app.use(express.json());
 app.use(cookieParser());
 app.set('trust proxy', 1);
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
-    return callback(null, false);
+    return callback(new Error(`CORS blocked for origin: ${origin}`), false);
   },
   credentials: true,
 }));
