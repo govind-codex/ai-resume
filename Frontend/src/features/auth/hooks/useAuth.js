@@ -11,21 +11,19 @@ export const useAuth = () => {
     setloading(true)
     try {
       const data = await login({ email, password })
-      setUser(data.user)
+      setUser(data?.user ?? null)
     } catch (error) {
       console.error('Login failed:', error)
     } finally {
       setloading(false)
     }
-
-    setloading(false)
   }
 
   const handleRegister = async ({ username, email, password }) => {
     setloading(true)
     try {
       const data = await register({ username, email, password })
-      setUser(data.user)
+      setUser(data?.user ?? null)
     } catch (error) {
       console.error('Register failed:', error)
     } finally {
@@ -64,7 +62,7 @@ export const useAuth = () => {
         const data = await getMe();
 
         if (isMounted) {
-          setUser(data.user);
+          setUser(data?.user ?? null);
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);
