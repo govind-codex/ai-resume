@@ -1,7 +1,6 @@
 import { useContext } from "react";
-import { useEffect } from "react";
 import { AuthContext } from "../auth.context";
-import { login, register, logout, getMe } from "../services/auth.api";
+import { login, register, logout } from "../services/auth.api";
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
@@ -12,8 +11,10 @@ export const useAuth = () => {
     try {
       const data = await login({ email, password })
       setUser(data?.user ?? null)
+      return true
     } catch (error) {
       console.error('Login failed:', error)
+      return false
     } finally {
       setloading(false)
     }
@@ -24,8 +25,10 @@ export const useAuth = () => {
     try {
       const data = await register({ username, email, password })
       setUser(data?.user ?? null)
+      return true
     } catch (error) {
       console.error('Register failed:', error)
+      return false
     } finally {
       setloading(false)
     }
@@ -36,49 +39,14 @@ export const useAuth = () => {
     try {
       const data = await logout()
       setUser(null)
+      return true
     } catch (error) {
       console.error('Logout failed:', error)
+      return false
     } finally {
       setloading(false)
     }
   }
-
-  // useEffect(() => {
-  //   const getAndSetUser = async () => {
-  //     const data = await getMe()
-  //     setUser(data.user)
-  //     setloading(false)
-  //   }
-
-  //   getAndSetUser()
-  // }, [])
-
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const getAndSetUser = async () => {
-      try {
-        const data = await getMe();
-
-        if (isMounted) {
-          setUser(data?.user ?? null);
-        }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-      } finally {
-        if (isMounted) {
-          setloading(false);
-        }
-      }
-    };
-
-    getAndSetUser();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   return { user, loading, handleLogin, handleRegister, handlelogout }
 }

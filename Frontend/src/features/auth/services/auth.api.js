@@ -20,8 +20,14 @@ export async function logout() {
 }
 
 export async function getMe() {
-    const response = await api.get('/api/auth/get-me', {
-      withCredentials: true  
-    })
-    return response.data
+    try {
+      const response = await api.get('/api/auth/get-me')
+      return response.data
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        return null
+      }
+
+      throw error
+    }
 }
