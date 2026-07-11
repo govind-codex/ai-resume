@@ -14,10 +14,13 @@ const Home = () => {
 
   const handleGenerateReport = async () => {
     const resumeFile = resumeInputRef.current.files[0]
-    // await generateReport({ jobDescription, selfDescription, resumeFile })
     const data = await generateReport({ jobDescription, selfDescription, resumeFile })
     console.log("Generated report data:", data)
-    navigate(`/interview/${data._id}`)
+    if (data?._id) {
+      navigate(`/interview/${data._id}`)
+    } else {
+      console.error("Interview report was not created successfully.")
+    }
   }
 
   if (loading) {

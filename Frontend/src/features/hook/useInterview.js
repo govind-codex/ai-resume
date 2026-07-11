@@ -86,44 +86,44 @@ export const useInterview = () => {
 
     const generateReport = async ({ jobDescription, selfDescription, resumeFile }) => {
         setLoading(true)
-        let response = null
         try {
-            response = await generateInterviewReport({ jobDescription, selfDescription, resumeFile })
-            setReport(response.interViewReport)
+            const interviewReport = await generateInterviewReport({ jobDescription, selfDescription, resumeFile })
+            setReport(interviewReport)
+            return interviewReport
         } catch (error) {
             console.error("Error generating interview report:", error)
+            return null
         } finally {
             setLoading(false)
         }
-        return response?.interViewReport
     }
 
     const getReportById = async (interviewId) => {
         setLoading(true)
-        let response = null
         try {
-            response = await getInterviewReportById(interviewId)
-            setReport(response.interViewReport)
+            const interviewReport = await getInterviewReportById(interviewId)
+            setReport(interviewReport)
+            return interviewReport
         } catch (error) {
             console.log(error)
+            return null
         } finally {
             setLoading(false)
         }
-        return response?.interViewReport
     }
 
     const getReports = async () => {
         setLoading(true)
-        let response = null
         try {
-            response = await getAllInterviewReports()
-            setReports(response.interViewReports)
+            const interviewReports = await getAllInterviewReports()
+            setReports(interviewReports)
+            return interviewReports
         } catch (error) {
             console.error("Error fetching interview reports:", error)
+            return []
         } finally {
             setLoading(false)
         }
-        return response?.interViewReports
     }
 
     return { loading, report, reports, generateReport, getReportById, getReports }

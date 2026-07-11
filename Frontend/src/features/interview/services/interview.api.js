@@ -9,8 +9,7 @@ export const generateInterviewReport = async ({jobDescription, selfDescription, 
     formData.append('selfDescription', selfDescription);
     formData.append('resume', resumeFile);
     const response = await api.post('/api/interview', formData)
-    console.log(response.data)
-    return response.data
+    return response.data?.interViewReport ?? response.data?.interviewReport ?? null
 }
 // export const generateInterviewReport = async ({ jobDescription, selfDescription, resumeFile }) => {
 //     try {
@@ -41,7 +40,7 @@ export const generateInterviewReport = async ({jobDescription, selfDescription, 
  */
 export const getInterviewReportById = async (interviewId) => {
     const response = await api.get(`/api/interview/report/${interviewId}`)
-    return response.data
+    return response.data?.interViewReport ?? response.data?.interviewReport ?? null
 }
 
 
@@ -50,5 +49,5 @@ export const getInterviewReportById = async (interviewId) => {
  */
 export const getAllInterviewReports = async () => {
     const response = await api.get('/api/interview')
-    return response.data
+    return response.data?.interViewReports ?? response.data?.interviewReports ?? []
 }
