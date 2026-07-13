@@ -9,7 +9,7 @@ const cors = require('cors');
 const app = express();
 const allowedOrigins = (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || 'http://localhost:5173')
   .split(',')
-  .map((origin) => origin.trim())
+  .map((origin) => origin.trim().replace(/\/$/, ''))
   .filter(Boolean);
 
 function isAllowedOrigin(origin) {
@@ -17,15 +17,18 @@ function isAllowedOrigin(origin) {
     return true;
   }
 
-  if (allowedOrigins.includes(origin)) {
+  const normalizedOrigin = origin.replace(/\/$/, '');
+
+  if (allowedOrigins.includes(normalizedOrigin)) {
     return true;
   }
 
   try {
     const url = new URL(origin);
+    const parsedOrigin = url.origin.replace(/\/$/, '');
     return (
-      /^https:\/\/.*\.vercel\.app$/.test(url.origin) ||
-      /^https:\/\/.*\.netlify\.app$/.test(url.origin)
+      /^https:\/\/.*\.vercel\.app$/.test(parsedOrigin) ||
+      /^https:\/\/.*\.netlify\.app$/.test(parsedOrigin)
     );
   } catch (error) {
     return false;

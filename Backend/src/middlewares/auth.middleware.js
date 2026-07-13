@@ -2,6 +2,10 @@ const jwt = require('jsonwebtoken');
 const blackListModel = require('../models/blacklist.model');
 const tokenBlackListModel = require('../models/blacklist.model');
 
+function getJwtSecret() {
+    return process.env.JWT_SECRET || process.env.JwT_SECRET;
+}
+
 async function authUser(req, res, next) {
     const token = req.cookies.token
     if (!token) {
@@ -14,7 +18,11 @@ async function authUser(req, res, next) {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const jwtSecret = getJwtSecret();
+        if (!jwtSecret) {
+            return res.status(500).json({ message: 'server misconfigured: JWT secret is missing' });
+        }
+        const decoded = jwt.verify(token, jwtSecret);
         req.user = decoded
         next();
     }catch(err){
