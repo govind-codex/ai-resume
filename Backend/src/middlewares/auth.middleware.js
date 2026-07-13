@@ -7,7 +7,10 @@ function getJwtSecret() {
 }
 
 async function authUser(req, res, next) {
-    const token = req.cookies.token
+    const bearerToken = req.headers.authorization?.startsWith('Bearer ')
+        ? req.headers.authorization.slice(7)
+        : null;
+    const token = req.cookies.token || bearerToken;
     if (!token) {
         return res.status(401).json({ message: 'token not provided' });
     }
