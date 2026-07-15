@@ -9,7 +9,6 @@ A modern web application that analyzes job descriptions and user profiles/resume
  🪟 Modern Interface: Beautiful ocean-breeze inspired UI featuring accessible dark modes and polished glassmorphic auth screens.
 
 ## Quick Start
-
 ### Backend
 1. Go to `/Backend`
 2. Create `.env` and configure port and MongoDB URI.
