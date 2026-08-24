@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react'
 import "../style/home.scss"
 import { useInterview } from '../../hook/useInterview.js'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 
 const Home = () => {
   const { loading, generateReport } = useInterview()
@@ -61,13 +61,25 @@ const Home = () => {
   return (
     <main className='planner-home'>
       <section className="planner-shell">
-        <div className="planner-intro">
-          <span className="section-kicker">AI interview planner</span>
-          <h1>Create your custom interview strategy.</h1>
-          <p>
-            Paste a role, upload your resume or describe your background, and generate
-            a focused plan for the interview ahead.
-          </p>
+        <div className="planner-heading-row">
+          <div className="planner-intro">
+            <span className="section-kicker">AI interview planner</span>
+            <h1>Create your custom interview strategy.</h1>
+            <p>
+              Paste a role, upload your resume or describe your background, and generate
+              a focused plan for the interview ahead.
+            </p>
+          </div>
+
+          <Link className="planner-dashboard-link" to="/interview">
+            <span className="dashboard-grid-icon" aria-hidden="true">
+              <i /><i /><i /><i />
+            </span>
+            <span>
+              <strong>My interviews</strong>
+              <small>View recent reports</small>
+            </span>
+          </Link>
         </div>
 
         <div className="planner-grid">

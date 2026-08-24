@@ -19,16 +19,66 @@ const sectionCopy = {
   }
 }
 
+const formatReportDate = (value) => {
+  const date = new Date(value)
+  if (!value || Number.isNaN(date.getTime())) return 'Date unavailable'
+
+  return new Intl.DateTimeFormat('en', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  }).format(date)
+}
+
+const ReportList = ({ reports, currentInterviewId }) => {
+  if (reports.length === 0) {
+    return (
+      <div className="interview-library-empty">
+        <span aria-hidden="true">+</span>
+        <h2>No interview reports yet</h2>
+        <p>Create your first strategy and the saved report will appear here.</p>
+        <Link to="/home">Create your first plan</Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="interview-report-list">
+      {reports.map((savedReport, index) => {
+        const score = Math.min(100, Math.max(0, Number(savedReport.matchScore) || 0))
+        const isCurrent = savedReport._id === currentInterviewId
+
+        return (
+          <article className={`interview-report-row ${isCurrent ? 'current' : ''}`} key={savedReport._id} style={{ '--delay': `${index * 55}ms` }}>
+            <div className="interview-report-score" style={{ '--score': `${score * 3.6}deg` }}>
+              <strong>{score}%</strong>
+            </div>
+            <div className="interview-report-details">
+              <span>{formatReportDate(savedReport.createdAt)}{isCurrent ? ' / Open now' : ''}</span>
+              <h3>{savedReport.title || 'Interview strategy'}</h3>
+              <p>{score >= 75 ? 'Strong role alignment' : score >= 50 ? 'Promising role alignment' : 'Focused preparation recommended'}</p>
+            </div>
+            <Link to={`/interview/${savedReport._id}`} aria-current={isCurrent ? 'page' : undefined}>
+              {isCurrent ? 'Current plan' : 'Open plan'} <span aria-hidden="true">&gt;</span>
+            </Link>
+          </article>
+        )
+      })}
+    </div>
+  )
+}
+
 const Interview = () => {
   const { interviewId } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
   const stateReport = location.state?.interviewData
-  const { report, getReportById, loading } = useInterview()
+  const { report, reports, getReportById, getReports, loading } = useInterview()
   const { user, handlelogout, loading: authLoading } = useAuth()
   const [activeSection, setActiveSection] = useState('technical')
   const [profileOpen, setProfileOpen] = useState(false)
   const [loadedInterviewId, setLoadedInterviewId] = useState(stateReport ? interviewId : null)
+  const [reportListLoaded, setReportListLoaded] = useState(false)
 
   useEffect(() => {
     if (!interviewId || stateReport) return
@@ -42,6 +92,18 @@ const Interview = () => {
       active = false
     }
   }, [getReportById, interviewId, stateReport])
+
+  useEffect(() => {
+    let active = true
+
+    getReports({ silent: Boolean(interviewId) }).finally(() => {
+      if (active) setReportListLoaded(true)
+    })
+
+    return () => {
+      active = false
+    }
+  }, [getReports, interviewId])
 
   useEffect(() => {
     if (!profileOpen) return
@@ -60,7 +122,14 @@ const Interview = () => {
   }, [profileOpen])
 
   const interviewData = stateReport ?? report
-  const requestComplete = Boolean(stateReport) || loadedInterviewId === interviewId
+  const requestComplete = !interviewId || Boolean(stateReport) || loadedInterviewId === interviewId
+  const recentReports = useMemo(() => (
+    [...reports].sort((first, second) => {
+      const firstDate = new Date(first.createdAt).getTime() || 0
+      const secondDate = new Date(second.createdAt).getTime() || 0
+      return secondDate - firstDate
+    })
+  ), [reports])
   const sections = useMemo(() => ([
     { key: 'technical', label: 'Technical', items: interviewData?.technicalQuestions ?? [] },
     { key: 'behavioral', label: 'Behavioral', items: interviewData?.behavioralQuestions ?? [] },
@@ -71,13 +140,46 @@ const Interview = () => {
     }
   ]), [interviewData])
 
-  if (loading || !requestComplete) {
+  if (loading || !requestComplete || !reportListLoaded) {
     return (
       <main className="interview-status-page">
         <div className="interview-loader" aria-hidden="true" />
         <span className="interview-kicker">AI interview strategy</span>
         <h1>Preparing your interview plan</h1>
         <p>Organizing your role match, questions, and preparation roadmap.</p>
+      </main>
+    )
+  }
+
+  if (!interviewId) {
+    return (
+      <main className="interview-page interview-library-page">
+        <header className="interview-topbar">
+          <Link className="interview-brand" to="/landing" aria-label="Prepwise landing page">
+            <span className="interview-brand-mark">P</span>
+            <span>AI InterviewPrep</span>
+          </Link>
+          <div className="interview-topbar-actions">
+            <Link className="interview-primary-action compact" to="/home">New strategy</Link>
+          </div>
+        </header>
+
+        <section className="interview-library-hero">
+          <span className="interview-kicker light">Saved interview reports</span>
+          <h1>Your interview plans, all in one place.</h1>
+          <p>Open a recent report to continue practicing its questions, skill gaps, and preparation roadmap.</p>
+        </section>
+
+        <section className="interview-library-content">
+          <div className="interview-library-heading">
+            <div>
+              <span className="interview-kicker">Report history</span>
+              <h2>Recent reports</h2>
+            </div>
+            <span>{recentReports.length} {recentReports.length === 1 ? 'report' : 'reports'}</span>
+          </div>
+          <ReportList reports={recentReports} />
+        </section>
       </main>
     )
   }
@@ -111,9 +213,10 @@ const Interview = () => {
       <header className="interview-topbar">
         <Link className="interview-brand" to="/landing" aria-label="Prepwise landing page">
           <span className="interview-brand-mark">P</span>
-          <span>Prepwise</span>
+          <span>AI-InterviewPrep</span>
         </Link>
         <div className="interview-topbar-actions">
+          <Link className="interview-text-action" to="/interview">Reports</Link>
           <Link className="interview-text-action" to="/home">New strategy</Link>
           <Link className="interview-primary-action compact" to="/home">Back to planner</Link>
           <button
@@ -173,6 +276,10 @@ const Interview = () => {
         </div>
 
         <nav className="profile-links" aria-label="Profile navigation">
+          <Link to="/interview" onClick={() => setProfileOpen(false)}>
+            <span><strong>Recent reports</strong><small>Open your saved interviews</small></span>
+            <b aria-hidden="true">&gt;</b>
+          </Link>
           <Link to="/home" onClick={() => setProfileOpen(false)}>
             <span><strong>Interview planner</strong><small>Create another strategy</small></span>
             <b aria-hidden="true">&gt;</b>
@@ -308,6 +415,17 @@ const Interview = () => {
             <p>Say your answers aloud and keep one clear example ready for each priority area.</p>
           </div>
         </aside>
+      </section>
+
+      <section className="interview-library-content embedded">
+        <div className="interview-library-heading">
+          <div>
+            <span className="interview-kicker">Saved interview reports</span>
+            <h2>Recent reports</h2>
+          </div>
+          <Link className="interview-view-all" to="/interview">View report library</Link>
+        </div>
+        <ReportList reports={recentReports} currentInterviewId={interviewId} />
       </section>
     </main>
   )
