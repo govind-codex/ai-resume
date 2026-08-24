@@ -1,4 +1,4 @@
-````markdown
+
 <div align="center">
 
 # 🧠 AI InterviewPrep
@@ -40,7 +40,7 @@ Job Description
  AI Analysis Engine
      ↓
 Personalized Interview Strategy
-````
+
 
 It then generates customized:
 
