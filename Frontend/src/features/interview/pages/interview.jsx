@@ -1,187 +1,311 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { useLocation, useParams, useNavigate } from 'react-router'
-import "../style/interview.scss"
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import '../style/interview.scss'
 import { useInterview } from '../../hook/useInterview.js'
+import { useAuth } from '../../auth/hooks/useAuth.js'
 
-
-// const defaultInterviewData = {
-//   matchScore: 78,
-//   technicalQuestions: [
-//     {
-//       question: "What is the difference between authentication and authorization?",
-//       intention: "To evaluate the candidate's understanding of security concepts and access control mechanisms.",
-//       answer: "Authentication verifies the identity of a user, while authorization determines what resources or actions the authenticated user is allowed to access."
-//     },
-//     {
-//       question: "Explain how JWT authentication works in Node.js.",
-//       intention: "To assess knowledge of token-based authentication and session management.",
-//       answer: "JWT authentication works by generating a signed token after successful login. The client stores the token and sends it with subsequent requests. The server verifies the token's signature and extracts user information without maintaining session state."
-//     },
-//     {
-//       question: "How does the Express.js middleware pipeline work?",
-//       intention: "To test understanding of request processing and middleware execution flow.",
-//       answer: "Express executes middleware functions sequentially in the order they are registered. Each middleware can modify the request or response objects, terminate the request, or pass control to the next middleware using next()."
-//     }
-//   ],
-//   behavioralQuestions: [
-//     {
-//       question: "Tell me about yourself.",
-//       intention: "To understand the candidate's background, communication skills, and career journey.",
-//       answer: "Provide a concise summary covering education, relevant experience, key technical skills, notable projects, and career goals that align with the role."
-//     },
-//     {
-//       question: "Describe a challenging bug you fixed and how you approached it.",
-//       intention: "To evaluate problem-solving ability, debugging methodology, and persistence.",
-//       answer: "Explain the issue, describe how you investigated it, the tools and techniques used, the solution implemented, and the outcome achieved."
-//     },
-//     {
-//       question: "How do you handle tight project deadlines?",
-//       intention: "To assess time management, prioritization, and ability to work under pressure.",
-//       answer: "Discuss breaking work into priorities, communicating risks early, focusing on high-impact tasks, tracking progress, and maintaining quality while meeting deadlines."
-//     }
-//   ],
-//   skillGaps: [
-//     { skill: "System Design", reason: "Limited experience designing scalable applications." },
-//     { skill: "Testing", reason: "Needs stronger knowledge of unit and integration testing." },
-//     { skill: "Cloud Deployment", reason: "Limited hands-on experience with AWS and CI/CD pipelines." }
-//   ],
-//   preperationPlan: [
-//     { day: 1, task: "Revise JavaScript fundamentals, closures, promises, and async/await." },
-//     { day: 2, task: "Practice Node.js and Express.js interview questions." },
-//     { day: 3, task: "Study MongoDB indexing, aggregation, and query optimization." },
-//     { day: 4, task: "Build a small REST API with authentication and role-based access control." },
-//     { day: 5, task: "Practice behavioral interview questions using the STAR method." },
-//     { day: 6, task: "Review system design basics and API scalability concepts." },
-//     { day: 7, task: "Conduct a mock interview and identify weak areas." }
-//   ]
-// }
-
-
+const sectionCopy = {
+  technical: {
+    title: 'Technical questions',
+    description: 'Practice the core technical areas this role is most likely to cover.'
+  },
+  behavioral: {
+    title: 'Behavioral questions',
+    description: 'Shape concise stories that demonstrate your impact, judgment, and collaboration.'
+  },
+  roadmap: {
+    title: 'Preparation roadmap',
+    description: 'Follow this focused study plan to close the most important gaps before interview day.'
+  }
+}
 
 const Interview = () => {
-
   const { interviewId } = useParams()
-  const { report } = useInterview()
-  const { reports, getReportById, loading } = useInterview()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const stateReport = location.state?.interviewData
+  const { report, getReportById, loading } = useInterview()
+  const { user, handlelogout, loading: authLoading } = useAuth()
+  const [activeSection, setActiveSection] = useState('technical')
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [loadedInterviewId, setLoadedInterviewId] = useState(stateReport ? interviewId : null)
 
   useEffect(() => {
-    if (interviewId) {
-      getReportById(interviewId)
+    if (!interviewId || stateReport) return
+
+    let active = true
+    getReportById(interviewId).finally(() => {
+      if (active) setLoadedInterviewId(interviewId)
+    })
+
+    return () => {
+      active = false
     }
-  }, [interviewId])
+  }, [getReportById, interviewId, stateReport])
 
+  useEffect(() => {
+    if (!profileOpen) return
 
-  const location = useLocation()
-  const interviewData = location.state?.interviewData ?? report??{}
-  const [activeSection, setActiveSection] = useState('technical')
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setProfileOpen(false)
+    }
 
+    document.addEventListener('keydown', closeOnEscape)
+    document.body.classList.add('profile-drawer-open')
+
+    return () => {
+      document.removeEventListener('keydown', closeOnEscape)
+      document.body.classList.remove('profile-drawer-open')
+    }
+  }, [profileOpen])
+
+  const interviewData = stateReport ?? report
+  const requestComplete = Boolean(stateReport) || loadedInterviewId === interviewId
   const sections = useMemo(() => ([
-    { key: 'technical', label: 'Technical questions', items: interviewData?.technicalQuestions ?? [] },
-    { key: 'behavioral', label: 'Behavioral questions', items: interviewData?.behavioralQuestions ?? [] },
-    { key: 'roadmap', label: 'Road Map', items: interviewData?.preperationPlan ?? interviewData?.preparationPlan ?? [] }
+    { key: 'technical', label: 'Technical', items: interviewData?.technicalQuestions ?? [] },
+    { key: 'behavioral', label: 'Behavioral', items: interviewData?.behavioralQuestions ?? [] },
+    {
+      key: 'roadmap',
+      label: 'Roadmap',
+      items: interviewData?.preperationPlan ?? interviewData?.preparationPlan ?? []
+    }
   ]), [interviewData])
 
-  if (loading || !report) {
+  if (loading || !requestComplete) {
     return (
-      <main className='loading-screen'>
-        <h1>Loading your interview plan...</h1>
+      <main className="interview-status-page">
+        <div className="interview-loader" aria-hidden="true" />
+        <span className="interview-kicker">AI interview strategy</span>
+        <h1>Preparing your interview plan</h1>
+        <p>Organizing your role match, questions, and preparation roadmap.</p>
+      </main>
+    )
+  }
+
+  if (!interviewData) {
+    return (
+      <main className="interview-status-page">
+        <div className="status-mark">!</div>
+        <span className="interview-kicker">Report unavailable</span>
+        <h1>We could not open this interview plan.</h1>
+        <p>The report may no longer exist, or the request could not be completed.</p>
+        <Link className="interview-primary-action" to="/home">Create a new plan</Link>
       </main>
     )
   }
 
   const activeSectionData = sections.find((section) => section.key === activeSection) ?? sections[0]
+  const skillGaps = interviewData.skillGaps ?? []
+  const totalQuestions = sections[0].items.length + sections[1].items.length
+  const matchScore = Math.min(100, Math.max(0, Number(interviewData.matchScore) || 0))
+  const username = user?.username?.trim() || 'Candidate'
+  const userInitial = username.charAt(0).toUpperCase()
 
-
+  const logoutUser = async () => {
+    const success = await handlelogout()
+    if (success) navigate('/landing', { replace: true })
+  }
 
   return (
     <main className="interview-page">
-      <section className="interview-shell">
-        <aside className="interview-panel nav-panel">
-          <div className="panel-card hero-card">
-            <p className="eyebrow">Interview Plan</p>
-            <h1 className="match-score">{interviewData.matchScore ?? 0}%</h1>
-            <p className="hero-copy">
-              Role fit overview for interview <span>#{interviewId ?? 'preview'}</span>
-            </p>
+      <header className="interview-topbar">
+        <Link className="interview-brand" to="/landing" aria-label="Prepwise landing page">
+          <span className="interview-brand-mark">P</span>
+          <span>Prepwise</span>
+        </Link>
+        <div className="interview-topbar-actions">
+          <Link className="interview-text-action" to="/home">New strategy</Link>
+          <Link className="interview-primary-action compact" to="/home">Back to planner</Link>
+          <button
+            className="profile-trigger"
+            type="button"
+            onClick={() => setProfileOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={profileOpen}
+            aria-controls="interview-profile-drawer"
+          >
+            <span className="profile-trigger-avatar">{userInitial}</span>
+            <span className="profile-trigger-name">{username}</span>
+          </button>
+        </div>
+      </header>
+
+      <button
+        className={`profile-backdrop ${profileOpen ? 'visible' : ''}`}
+        type="button"
+        aria-label="Close profile"
+        tabIndex={profileOpen ? 0 : -1}
+        onClick={() => setProfileOpen(false)}
+      />
+
+      <aside
+        className={`profile-drawer ${profileOpen ? 'open' : ''}`}
+        id="interview-profile-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label="User profile"
+        aria-hidden={!profileOpen}
+      >
+        <div className="profile-drawer-header">
+          <span className="interview-kicker">Your profile</span>
+          <button className="profile-close" type="button" onClick={() => setProfileOpen(false)} aria-label="Close profile">X</button>
+        </div>
+
+        <div className="profile-identity">
+          <div className="profile-avatar">{userInitial}</div>
+          <div>
+            <h2>{username}</h2>
+            <p>{user?.email || 'Signed-in candidate'}</p>
+          </div>
+        </div>
+
+        <div className="profile-plan-summary">
+          <span>Current plan</span>
+          <strong>{matchScore}% role match</strong>
+          <div className="profile-progress" aria-hidden="true">
+            <span style={{ width: `${matchScore}%` }} />
+          </div>
+          <div className="profile-mini-stats">
+            <div><strong>{totalQuestions}</strong><span>Questions</span></div>
+            <div><strong>{skillGaps.length}</strong><span>Skill gaps</span></div>
+            <div><strong>{sections[2].items.length}</strong><span>Days</span></div>
+          </div>
+        </div>
+
+        <nav className="profile-links" aria-label="Profile navigation">
+          <Link to="/home" onClick={() => setProfileOpen(false)}>
+            <span><strong>Interview planner</strong><small>Create another strategy</small></span>
+            <b aria-hidden="true">&gt;</b>
+          </Link>
+          <Link to="/landing" onClick={() => setProfileOpen(false)}>
+            <span><strong>About Prepwise</strong><small>Return to the landing page</small></span>
+            <b aria-hidden="true">&gt;</b>
+          </Link>
+        </nav>
+
+        <button className="profile-logout" type="button" onClick={logoutUser} disabled={authLoading}>
+          {authLoading ? 'Signing out...' : 'Sign out'}
+        </button>
+      </aside>
+
+      <section className="interview-hero">
+        <div className="interview-hero-copy">
+          <span className="interview-kicker light">Your personalized plan</span>
+          <h1>Interview readiness, organized.</h1>
+          <p>Move through your likely questions, close priority skill gaps, and follow a focused preparation schedule.</p>
+        </div>
+
+        <div className="score-summary" aria-label={`${matchScore}% role match`}>
+          <div className="score-ring" style={{ '--score': `${matchScore * 3.6}deg` }}>
+            <div>
+              <strong>{matchScore}%</strong>
+              <span>role match</span>
+            </div>
+          </div>
+          <p>{matchScore >= 75 ? 'Strong foundation' : matchScore >= 50 ? 'Promising match' : 'Room to grow'}</p>
+        </div>
+      </section>
+
+      <section className="interview-stats" aria-label="Interview plan overview">
+        <article><strong>{totalQuestions}</strong><span>practice questions</span></article>
+        <article><strong>{skillGaps.length}</strong><span>priority skill gaps</span></article>
+        <article><strong>{sections[2].items.length}</strong><span>preparation days</span></article>
+      </section>
+
+      <section className="interview-workspace">
+        <div className="interview-main-column">
+          <div className="interview-section-heading">
+            <div>
+              <span className="interview-kicker">Practice workspace</span>
+              <h2>{sectionCopy[activeSection].title}</h2>
+              <p>{sectionCopy[activeSection].description}</p>
+            </div>
+
+            <nav className="interview-tabs" aria-label="Interview plan sections">
+              {sections.map((section) => (
+                <button
+                  key={section.key}
+                  type="button"
+                  className={activeSection === section.key ? 'active' : ''}
+                  onClick={() => setActiveSection(section.key)}
+                >
+                  {section.label}<span>{section.items.length}</span>
+                </button>
+              ))}
+            </nav>
           </div>
 
-          <nav className="section-nav" aria-label="Interview sections">
-            {sections.map((section) => (
-              <button
-                key={section.key}
-                type="button"
-                className={`nav-item ${activeSection === section.key ? 'active' : ''}`}
-                onClick={() => setActiveSection(section.key)}
-              >
-                {section.label}
-              </button>
-            ))}
-          </nav>
-        </aside>
-
-        <section className="interview-panel content-panel">
-          <div className="panel-card content-header">
-            <p className="eyebrow">{activeSectionData.label}</p>
-            <h2>{activeSection === 'roadmap' ? 'Preparation plan' : 'Main content'}</h2>
-            <p className="panel-description">
-              {activeSection === 'technical' && 'Deep dive into the core technical areas the role is likely to cover.'}
-              {activeSection === 'behavioral' && 'Practice concise, structured answers that highlight impact and collaboration.'}
-              {activeSection === 'roadmap' && 'Follow this study plan to close the biggest gaps before the interview.'}
-            </p>
-          </div>
-
-          <div className="panel-card content-body">
-            {activeSection !== 'roadmap' ? (
-              <div className="question-list">
-                {activeSectionData.items.map((item, index) => (
-                  <article className="question-card" key={`${item.question}-${index}`}>
-                    <div className="question-topline">
-                      <span className="question-index">{String(index + 1).padStart(2, '0')}</span>
+          {activeSectionData.items.length === 0 ? (
+            <div className="interview-empty-state">
+              <strong>No items were generated for this section.</strong>
+              <p>Create a new strategy with a more detailed role description to get richer guidance.</p>
+            </div>
+          ) : activeSection !== 'roadmap' ? (
+            <div className="question-list">
+              {activeSectionData.items.map((item, index) => (
+                <article
+                  className="question-card"
+                  key={`${item.question}-${index}`}
+                  style={{ '--delay': `${index * 70}ms` }}
+                >
+                  <div className="question-topline">
+                    <span className="question-index">{String(index + 1).padStart(2, '0')}</span>
+                    <div>
+                      <span className="question-type">Question</span>
                       <h3>{item.question}</h3>
                     </div>
-                    <p className="question-intention">{item.intention}</p>
+                  </div>
+                  {item.intention && (
+                    <div className="question-intention">
+                      <strong>What they are assessing</strong>
+                      <p>{item.intention}</p>
+                    </div>
+                  )}
+                  {item.answer && (
                     <div className="answer-box">
-                      <span className="answer-label">Suggested answer</span>
+                      <strong>Suggested answer direction</strong>
                       <p>{item.answer}</p>
                     </div>
-                  </article>
-                ))}
-              </div>
-            ) : (
-              <div className="roadmap-list">
-                {activeSectionData.items.map((item) => (
-                  <article className="roadmap-card" key={item.day}>
-                    <div className="roadmap-day">Day {item.day}</div>
+                  )}
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="roadmap-list">
+              {activeSectionData.items.map((item, index) => (
+                <article className="roadmap-card" key={`${item.day}-${index}`} style={{ '--delay': `${index * 60}ms` }}>
+                  <div className="roadmap-day"><span>Day</span><strong>{item.day}</strong></div>
+                  <div>
+                    <span className="question-type">Preparation focus</span>
                     <p>{item.task}</p>
-                  </article>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-
-        <aside className="interview-panel skill-panel">
-          <div className="panel-card">
-            <p className="eyebrow">Skill Gaps</p>
-            <div className="skill-chip-group">
-              {(interviewData.skillGaps ?? []).map((skill) => (
-                <span className="skill-chip" key={skill.skill}>
-                  {skill.skill}
-                </span>
+                  </div>
+                </article>
               ))}
             </div>
-          </div>
+          )}
+        </div>
 
-          <div className="panel-card skill-details">
-            <h3>Why these gaps matter</h3>
+        <aside className="skill-rail">
+          <span className="interview-kicker">Priority development</span>
+          <h2>Skill gaps to close</h2>
+          <p className="skill-rail-intro">Start with these areas to make the biggest improvement to your role fit.</p>
+
+          {skillGaps.length > 0 ? (
             <div className="skill-detail-list">
-              {(interviewData.skillGaps ?? []).map((skill) => (
-                <div className="skill-detail" key={`${skill.skill}-${skill.reason}`}>
-                  <span className="skill-name">{skill.skill}</span>
-                  <p>{skill.reason}</p>
-                </div>
+              {skillGaps.map((skill, index) => (
+                <article className="skill-detail" key={`${skill.skill}-${index}`}>
+                  <div className="skill-number">{String(index + 1).padStart(2, '0')}</div>
+                  <div><h3>{skill.skill}</h3><p>{skill.reason}</p></div>
+                </article>
               ))}
             </div>
+          ) : (
+            <p className="skill-empty">No priority gaps were identified.</p>
+          )}
+
+          <div className="skill-tip">
+            <strong>Practice tip</strong>
+            <p>Say your answers aloud and keep one clear example ready for each priority area.</p>
           </div>
         </aside>
       </section>

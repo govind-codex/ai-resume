@@ -72,7 +72,7 @@
 //     }}
 
 import { getAllInterviewReports, generateInterviewReport, getInterviewReportById } from "../interview/services/interview.api.js"
-import { useContext } from "react"
+import { useCallback, useContext } from "react"
 import { InterviewContext } from "../interview/interview.context.jsx"
 
 export const useInterview = () => {
@@ -98,7 +98,7 @@ export const useInterview = () => {
         }
     }
 
-    const getReportById = async (interviewId) => {
+    const getReportById = useCallback(async (interviewId) => {
         setLoading(true)
         try {
             const interviewReport = await getInterviewReportById(interviewId)
@@ -110,7 +110,7 @@ export const useInterview = () => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [setLoading, setReport])
 
     const getReports = async () => {
         setLoading(true)
