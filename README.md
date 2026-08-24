@@ -30,7 +30,7 @@
 
 Instead of providing generic interview questions, the application analyzes:
 
-```text
+
 Your Resume
      +
 Your Profile
@@ -116,7 +116,7 @@ Creates a structured preparation strategy focused on the areas that matter most 
 
 ## 🔄 How It Works
 
-```mermaid
+
 flowchart LR
 
 A[👤 User] --> B[📄 Upload Resume]
@@ -136,7 +136,7 @@ E --> H[💻 Technical Questions]
 E --> I[💬 Behavioral Questions]
 
 E --> J[🗺️ Preparation Plan]
-```
+
 
 ---
 
@@ -144,7 +144,7 @@ E --> J[🗺️ Preparation Plan]
 
 The AI evaluates your profile against the target position and generates a structured interview report.
 
-```text
+
 ┌───────────────────────────────┐
 │        USER PROFILE           │
 │                               │
@@ -173,7 +173,7 @@ The AI evaluates your profile against the target position and generates a struct
 │  ⚠️ Skill Gaps                │
 │  🗺️ Preparation Strategy      │
 └───────────────────────────────┘
-```
+
 
 ---
 
@@ -210,7 +210,7 @@ The AI evaluates your profile against the target position and generates a struct
 
 ## 📁 Project Structure
 
-```text
+
 AI-InterviewPrep/
 │
 ├── 📂 Backend/
@@ -238,7 +238,6 @@ AI-InterviewPrep/
 │   └── vite.config.js
 │
 └── README.md
-```
 
 ---
 
@@ -246,11 +245,11 @@ AI-InterviewPrep/
 
 ## 1️⃣ Clone the Repository
 
-```bash
+
 git clone https://github.com/govind-codex/ai-resume.git
 
 cd YOUR_REPOSITORY
-```
+
 
 ---
 
@@ -258,19 +257,18 @@ cd YOUR_REPOSITORY
 
 Navigate to the backend:
 
-```bash
+
 cd Backend
-```
+
 
 Install dependencies:
 
-```bash
+
 npm install
-```
 
 Create a `.env` file:
 
-```env
+
 PORT=5000
 
 MONGO_URI=your_mongodb_connection_string
@@ -278,19 +276,18 @@ MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
 
 GEMINI_API_KEY=your_gemini_api_key
-```
+
 
 Start the development server:
 
-```bash
+
 npm run dev
-```
 
 Backend should now be running on:
 
-```text
+
 http://localhost:5000
-```
+
 
 ---
 
@@ -298,27 +295,26 @@ http://localhost:5000
 
 Open another terminal:
 
-```bash
+
 cd Frontend
-```
+
 
 Install dependencies:
 
-```bash
+
 npm install
-```
+
 
 Start the frontend:
 
-```bash
+
 npm run dev
-```
 
 Open:
 
-```text
+
 http://localhost:5173
-```
+
 
 ---
 
@@ -335,11 +331,11 @@ http://localhost:5173
 
 Add this to `.gitignore`:
 
-```gitignore
+gitignore
 .env
 node_modules/
 dist/
-```
+
 
 ---
 
@@ -349,28 +345,28 @@ dist/
 
 Upload your resume.
 
-```text
+text
 resume.pdf
-```
+
 
 ### Step 2
 
 Describe yourself.
 
-```text
+text
 Backend Developer experienced with
 Node.js, Express.js, MongoDB and REST APIs.
-```
+
 
 ### Step 3
 
 Paste the target job description.
 
-```text
+text
 Looking for a Backend Developer with
 Node.js, Express, MongoDB, REST APIs,
 authentication and system-design knowledge.
-```
+
 
 ### Step 4
 
