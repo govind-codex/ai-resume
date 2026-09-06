@@ -72,7 +72,7 @@
 //     }}
 
 import { getAllInterviewReports, generateInterviewReport, getInterviewReportById } from "../interview/services/interview.api.js"
-import { useContext } from "react"
+import { useCallback, useContext } from "react"
 import { InterviewContext } from "../interview/interview.context.jsx"
 
 export const useInterview = () => {
@@ -84,11 +84,17 @@ export const useInterview = () => {
     }
     const { loading, setLoading, report, setReport, reports, setReports } = context
 
-    const generateReport = async ({ jobDescription, selfDescription, resumeFile }) => {
+    const generateReport = useCallback(async ({ jobDescription, selfDescription, resumeFile }) => {
         setLoading(true)
         try {
             const interviewReport = await generateInterviewReport({ jobDescription, selfDescription, resumeFile })
             setReport(interviewReport)
+            if (interviewReport?._id) {
+                setReports((currentReports) => [
+                    interviewReport,
+                    ...currentReports.filter((savedReport) => savedReport._id !== interviewReport._id)
+                ])
+            }
             return interviewReport
         } catch (error) {
             console.error("Error generating interview report:", error)
@@ -96,9 +102,9 @@ export const useInterview = () => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [setLoading, setReport, setReports])
 
-    const getReportById = async (interviewId) => {
+    const getReportById = useCallback(async (interviewId) => {
         setLoading(true)
         try {
             const interviewReport = await getInterviewReportById(interviewId)
@@ -110,10 +116,10 @@ export const useInterview = () => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [setLoading, setReport])
 
-    const getReports = async () => {
-        setLoading(true)
+    const getReports = useCallback(async ({ silent = false } = {}) => {
+        if (!silent) setLoading(true)
         try {
             const interviewReports = await getAllInterviewReports()
             setReports(interviewReports)
@@ -122,9 +128,9 @@ export const useInterview = () => {
             console.error("Error fetching interview reports:", error)
             return []
         } finally {
-            setLoading(false)
+            if (!silent) setLoading(false)
         }
-    }
+    }, [setLoading, setReports])
 
     return { loading, report, reports, generateReport, getReportById, getReports }
 }

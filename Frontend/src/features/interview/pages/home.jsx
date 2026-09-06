@@ -1,21 +1,22 @@
-import React, { useState, useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import "../style/home.scss"
 import { useInterview } from '../../hook/useInterview.js'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 
 const Home = () => {
-  const { loading, generateReport, reports } = useInterview()
+  const { loading, generateReport } = useInterview()
   const resumeInputRef = useRef()
-  const [resume, setResume] = useState(null);
-  const [jobDescription, setJobDescription] = useState('');
-  const [selfDescription, setSelfDescription] = useState('');
+  const [resume, setResume] = useState(null)
+  const [jobDescription, setJobDescription] = useState('')
+  const [selfDescription, setSelfDescription] = useState('')
 
   const navigate = useNavigate()
+  const isFormValid = resume || selfDescription.trim()
 
   const handleGenerateReport = async () => {
-    const resumeFile = resumeInputRef.current.files[0]
+    const resumeFile = resumeInputRef.current?.files?.[0] ?? resume
     const data = await generateReport({ jobDescription, selfDescription, resumeFile })
-    console.log("Generated report data:", data)
+
     if (data?._id) {
       navigate(`/interview/${data._id}`)
     } else {
@@ -23,140 +24,133 @@ const Home = () => {
     }
   }
 
+  const handleResumeChange = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setResume(file)
+    }
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.currentTarget.classList.add('drag-over')
+  }
+
+  const handleDragLeave = (e) => {
+    e.currentTarget.classList.remove('drag-over')
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    e.currentTarget.classList.remove('drag-over')
+    const file = e.dataTransfer.files?.[0]
+    if (file) {
+      setResume(file)
+    }
+  }
+
   if (loading) {
     return (
       <main className='loading-screen'>
-        <h1>loading your interview plan...</h1>
+        <div className="loading-orbit" />
+        <h1>Building your interview plan...</h1>
       </main>
     )
   }
 
-  const handleResumeChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setResume(file);
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.currentTarget.classList.add('drag-over');
-  };
-
-  const handleDragLeave = (e) => {
-    e.currentTarget.classList.remove('drag-over');
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.currentTarget.classList.remove('drag-over');
-    const files = e.dataTransfer.files;
-    if (files?.[0]) {
-      setResume(files[0]);
-    }
-  };
-
-  const isFormValid = resume || selfDescription.trim();
-
   return (
-    <main className='home'>
-      <div className="page-header">
-        <h1 className="page-title">
-          Create Your Custom <span className="highlight">Interview Plan</span>
-        </h1>
-        <p className="page-subtitle">
-          Let our AI analyze the job requirements and your unique profile to build a winning strategy
-        </p>
-      </div>
+    <main className='planner-home'>
+      <section className="planner-shell">
+        <div className="planner-heading-row">
+          <div className="planner-intro">
+            <span className="section-kicker">AI interview planner</span>
+            <h1>Create your custom interview strategy.</h1>
+            <p>
+              Paste a role, upload your resume or describe your background, and generate
+              a focused plan for the interview ahead.
+            </p>
+          </div>
 
-      <div className="interview-container">
-        <div className="interview-content">
-          <div className="section-column left-section">
-            <div className="section-header">
-              <span className="section-icon">📌</span>
-              <h2>TARGET JOB DESCRIPTION</h2>
-            </div>
+          <Link className="planner-dashboard-link" to="/interview">
+            <span className="dashboard-grid-icon" aria-hidden="true">
+              <i /><i /><i /><i />
+            </span>
+            <span>
+              <strong>My interviews</strong>
+              <small>View recent reports</small>
+            </span>
+          </Link>
+        </div>
+
+        <div className="planner-grid">
+          <section className="planner-panel">
+            <h2>Target job description</h2>
             <textarea
-              onChange={(e) => { setJobDescription(e.target.value) }}
               name="jobDescription"
               id="jobDescription"
-              placeholder='Paste the full job description here... e.g. "Senior Frontend Engineer at Google requires proficiency in React, TypeScript, and large-scale system design..."'
+              placeholder='Paste the full job description here...'
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
-              className="input-textarea"
-            ></textarea>
-            <div className="character-count">0 / 5000 chars</div>
-          </div>
+            />
+            <div className="planner-count">{jobDescription.length} / 5000 chars</div>
+          </section>
 
-          <div className="section-column right-section">
-            <div className="profile-section">
-              <div className="section-header">
-                <span className="section-icon">👤</span>
-                <h2>YOUR PROFILE</h2>
-              </div>
-
-              <div className="resume-upload-group">
-                <div className="upload-label">Upload Resume <small className="required">(Red Rightful)</small></div>
-                <div
-                  className="file-drop-zone"
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => document.getElementById('resume').click()}
-                >
-                  <svg className="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M12 2v20m10-10H2" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                  <p className="upload-text">Click to upload or drag & drop</p>
-                  <p className="upload-subtext">PDF or DOCX (MAX 5MB)</p>
-                </div>
-                <input
-                  ref={resumeInputRef}
-                  hidden
-                  type="file"
-                  name="resume"
-                  id="resume"
-                  accept='.pdf,.docx'
-                  onChange={handleResumeChange}
-                />
-                {resume && <div className="file-name">📄 {resume.name}</div>}
-              </div>
-
-              <div className="divider">OR</div>
-
-              <div className="description-group">
-                <label htmlFor="selfDescription" className="input-label">Quick Self Description</label>
-                <textarea
-                  onChange={(e) => { setSelfDescription(e.target.value) }}
-                  name="selfDescription"
-                  id="selfDescription"
-                  placeholder="Briefly describe your experience, key skills, and years of experience if you don't have a resume handy..."
-                  value={selfDescription}
-                  onChange={(e) => setSelfDescription(e.target.value)}
-                  className="input-textarea"
-                ></textarea>
-              </div>
-
-              <div className="validation-message">
-                <span className="message-icon">ℹ️</span>
-                <p>Either a Resume or a Self Description is required to generate a personalized plan.</p>
-              </div>
-
-              <button
-                onClick={handleGenerateReport}
-                className={`button primary-button ${!isFormValid ? 'disabled' : ''}`}
-                disabled={!isFormValid}
-              >
-                ✨ Generate My Interview Strategy
-              </button>
+          <section className="planner-panel">
+            <h2>Your profile</h2>
+            <label>Upload resume</label>
+            <div
+              className="planner-drop-zone"
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => resumeInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  resumeInputRef.current?.click()
+                }
+              }}
+            >
+              <span>+</span>
+              <p>{resume ? resume.name : 'Click to upload or drag and drop'}</p>
+              <small>PDF or DOCX, max 5MB</small>
             </div>
-          </div>
-        </div>
-      </div>
+            <input
+              ref={resumeInputRef}
+              hidden
+              type="file"
+              name="resume"
+              id="resume"
+              accept='.pdf,.docx'
+              onChange={handleResumeChange}
+            />
 
-      <footer className="home-footer">
-        <p>© 2026 AI Resume. Built to help you prepare smarter for interviews.</p>
-      </footer>
+            <div className="planner-divider">OR</div>
+
+            <label htmlFor="selfDescription">Quick self description</label>
+            <textarea
+              name="selfDescription"
+              id="selfDescription"
+              placeholder="Summarize your experience, skills, projects, and target role..."
+              value={selfDescription}
+              onChange={(e) => setSelfDescription(e.target.value)}
+            />
+
+            <p className="planner-note">
+              Either a resume or a self description is required to generate a personalized plan.
+            </p>
+
+            <button
+              onClick={handleGenerateReport}
+              className={`planner-submit ${!isFormValid ? 'disabled' : ''}`}
+              disabled={!isFormValid}
+            >
+              Generate Interview Strategy
+            </button>
+          </section>
+        </div>
+      </section>
     </main>
   )
 }
